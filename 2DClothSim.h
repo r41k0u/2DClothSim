@@ -30,6 +30,8 @@ namespace ClothSim {
 		std::vector<struct vect2D> *velos, *accs;
 		float springConst, dampConst, vertMass;
 
+		const struct vect2D dirX = vect2D(1.0f, .0f), dirY = vect2D(.0f, 1.0f), dirNE = vect2D(sqrtf(0.5f), -sqrtf(0.5f)), dirSE = vect2D(sqrtf(0.5f), sqrtf(0.5f));
+
 		void initVerts();
 
 	public:
