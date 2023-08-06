@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     do {
         SDL_SetRenderDrawColor(ClothSim::renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(ClothSim::renderer);
-        ClothSim::update(cloth, 0.05f);
+        ClothSim::update(cloth, 0.002f);
         SDL_SetRenderDrawColor(ClothSim::renderer, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderDrawPointsF(ClothSim::renderer, cloth->getVerts()->data(), cloth->getPixelsX() * cloth->getPixelsY());
         SDL_RenderPresent(ClothSim::renderer);
@@ -39,12 +39,14 @@ int main(int argc, char* argv[])
 
 void ClothSim::Cloth::initVerts() {
     verts = new std::vector<SDL_FPoint>;
-    velos = new std::vector<struct velo>;
+    velos = new std::vector<struct vect2D>;
+    accs = new std::vector<struct vect2D>;
 
     for (int64_t i = 0; i < pixels_y; i++) {
         for (int64_t j = 0; j < pixels_x; j++) {
             verts->push_back(SDL_FPoint());
-            velos->push_back(velo(.0f, 1.0f));
+            velos->push_back(vect2D(.0f, .0f));
+            accs->push_back(vect2D(.0f, 9.8f));
             (*verts)[(i * pixels_x) + j].x = (float)(10 + 2 * j);
             (*verts)[(i * pixels_x) + j].y = (float)(10 + 2 * i);
         }
@@ -54,7 +56,15 @@ void ClothSim::Cloth::initVerts() {
 }
 
 void ClothSim::update(Cloth* cloth, const float time) {
+    cloth->updateVelo(time);
     cloth->updatePos(time);
+}
+
+void ClothSim::Cloth::updateVelo(const float time) {
+    for (int i = 0; i < pixels_x * pixels_y; i++) {
+        (*velos)[i].x += (*accs)[i].x * time;
+        (*velos)[i].y += (*accs)[i].y * time;
+    }
 }
 
 void ClothSim::Cloth::updatePos(const float time) {

@@ -6,6 +6,7 @@
 #include "SDL.h"
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 namespace ClothSim {
 
@@ -13,11 +14,11 @@ namespace ClothSim {
 	SDL_Renderer* renderer;
 	double time;
 
-	struct velo {
+	struct vect2D {
 		float x;
 		float y;
 
-		velo(float inp_x, float inp_y) { x = inp_x; y = inp_y; }
+		vect2D(float inp_x, float inp_y) { x = inp_x; y = inp_y; }
 	};
 
 	class Cloth {
@@ -26,7 +27,7 @@ namespace ClothSim {
 		int64_t pixels_x, pixels_y;
 		bool init;
 		std::vector<SDL_FPoint> *verts;
-		std::vector<struct velo> *velos;
+		std::vector<struct vect2D> *velos, *accs;
 
 		void initVerts();
 
@@ -34,6 +35,7 @@ namespace ClothSim {
 		// Constructor
 		Cloth(int x = 100, int y = 100) : pixels_x(x), pixels_y(y), init(false), verts(nullptr), velos(nullptr) { initVerts(); }
 
+		void updateVelo(const float time);
 		void updatePos(const float time);
 
 		// Getters
