@@ -19,30 +19,22 @@ int main(int argc, char* argv[])
     );
 
     ClothSim::renderer = SDL_CreateRenderer(ClothSim::window, -1, SDL_RENDERER_SOFTWARE);
-    SDL_SetRenderDrawColor(ClothSim::renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(ClothSim::renderer);
-
     ClothSim::Cloth* cloth = new ClothSim::Cloth();
-    SDL_SetRenderDrawColor(ClothSim::renderer, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawPointsF(ClothSim::renderer, cloth->getVerts()->data(), cloth->getPixelsX() * cloth->getPixelsY());
-
-    SDL_RenderPresent(ClothSim::renderer);
-    ClothSim::waitForExit();
+    SDL_Event e;
+    do {
+        SDL_SetRenderDrawColor(ClothSim::renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(ClothSim::renderer);
+        ClothSim::update(cloth, 0.05f);
+        SDL_SetRenderDrawColor(ClothSim::renderer, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
+        SDL_RenderDrawPointsF(ClothSim::renderer, cloth->getVerts()->data(), cloth->getPixelsX() * cloth->getPixelsY());
+        SDL_RenderPresent(ClothSim::renderer);
+        SDL_PollEvent(&e);
+    } while (e.type != SDL_QUIT);
 
     SDL_DestroyWindow(ClothSim::window);
     SDL_Quit();
 
     return 0;
-}
-
-void ClothSim::waitForExit() {
-    SDL_Event e;
-    bool quit = false;
-
-    while (!quit) {
-        while (SDL_PollEvent(&e))
-            quit = (e.type == SDL_QUIT);
-    }
 }
 
 void ClothSim::Cloth::initVerts() {
@@ -52,7 +44,7 @@ void ClothSim::Cloth::initVerts() {
     for (int64_t i = 0; i < pixels_y; i++) {
         for (int64_t j = 0; j < pixels_x; j++) {
             verts->push_back(SDL_FPoint());
-            velos->push_back(velo(.0f, .0f));
+            velos->push_back(velo(.0f, 1.0f));
             (*verts)[(i * pixels_x) + j].x = (float)(10 + 2 * j);
             (*verts)[(i * pixels_x) + j].y = (float)(10 + 2 * i);
         }
@@ -61,6 +53,13 @@ void ClothSim::Cloth::initVerts() {
     init = true;
 }
 
-void ClothSim::update(Cloth* cloth, double& time) {
+void ClothSim::update(Cloth* cloth, const float time) {
+    cloth->updatePos(time);
+}
 
+void ClothSim::Cloth::updatePos(const float time) {
+    for (int i = 0; i < pixels_x * pixels_y; i++) {
+        (*verts)[i].x += (*velos)[i].x * time;
+        (*verts)[i].y += (*velos)[i].y * time;
+    }
 }

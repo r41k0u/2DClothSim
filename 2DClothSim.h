@@ -34,12 +34,13 @@ namespace ClothSim {
 		// Constructor
 		Cloth(int x = 100, int y = 100) : pixels_x(x), pixels_y(y), init(false), verts(nullptr), velos(nullptr) { initVerts(); }
 
+		void updatePos(const float time);
+
 		// Getters
 		int64_t getPixelsX() { return pixels_x; }
 		int64_t getPixelsY() { return pixels_x; }
 		std::vector<SDL_FPoint>* getVerts() { return verts; }
 	};
 
-	void waitForExit();
-	void update(Cloth* cloth, double &time);
+	void update(Cloth* cloth, const float time);
 }
