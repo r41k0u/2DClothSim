@@ -82,7 +82,14 @@ void ClothSim::Cloth::updatePos(const float time) {
 }
 
 void ClothSim::Cloth::calcStruct(const float time) {
+    for (int64_t i = 0; i < pixels_y; i++) {
+        for (int64_t j = 0; j < pixels_x; j++) {
+            if (isValidVert(j + 1, i)) {
+                float delL = norm((*verts)[pixels_x * i + j].x - (*verts)[pixels_x * i + j + 1].x, (*verts)[pixels_x * i + j].y - (*verts)[pixels_x * i + j + 1].y) - 1.0f;
 
+            }
+        }
+    }
 }
 
 void ClothSim::Cloth::calcShear(const float time) {

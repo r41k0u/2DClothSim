@@ -47,6 +47,7 @@ namespace ClothSim {
 		void calcBend(const float time);
 
 		inline bool isValidVert(int64_t x, int64_t y) { return ((-1 < x) && (x < pixels_x) && (-1 < y) && (y < pixels_y)); }
+		inline float norm(float x, float y) { return sqrt(pow(x, 2) + pow(y, 2)); }
 
 		// Getters
 		int64_t getPixelsX() { return pixels_x; }
