@@ -3,8 +3,6 @@
 
 #include "2DClothSim.h"
 
-using namespace std;
-
 int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -60,6 +58,15 @@ void ClothSim::update(Cloth* cloth, const float time) {
     cloth->updatePos(time);
 }
 
+void ClothSim::Cloth::updateAcc(const float time) {
+    calcStruct(time);
+    calcBend(time);
+    calcBend(time);
+
+    // Fixed the 2 corners of cloth
+    (*accs)[0].x = (*accs)[0].y = (*accs)[pixels_x - 1].x = (*accs)[pixels_x - 1].y = .0f;
+}
+
 void ClothSim::Cloth::updateVelo(const float time) {
     for (int i = 0; i < pixels_x * pixels_y; i++) {
         (*velos)[i].x += (*accs)[i].x * time;
@@ -72,4 +79,16 @@ void ClothSim::Cloth::updatePos(const float time) {
         (*verts)[i].x += (*velos)[i].x * time;
         (*verts)[i].y += (*velos)[i].y * time;
     }
+}
+
+void ClothSim::Cloth::calcStruct(const float time) {
+
+}
+
+void ClothSim::Cloth::calcShear(const float time) {
+
+}
+
+void ClothSim::Cloth::calcBend(const float time) {
+
 }
