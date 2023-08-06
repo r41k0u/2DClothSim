@@ -47,14 +47,20 @@ void ClothSim::waitForExit() {
 
 void ClothSim::Cloth::initVerts() {
     verts = new std::vector<SDL_FPoint>;
+    velos = new std::vector<struct velo>;
 
     for (int64_t i = 0; i < pixels_y; i++) {
         for (int64_t j = 0; j < pixels_x; j++) {
             verts->push_back(SDL_FPoint());
+            velos->push_back(velo(.0f, .0f));
             (*verts)[(i * pixels_x) + j].x = (float)(10 + 2 * j);
             (*verts)[(i * pixels_x) + j].y = (float)(10 + 2 * i);
         }
     }
 
     init = true;
+}
+
+void ClothSim::update(Cloth* cloth, double& time) {
+
 }
