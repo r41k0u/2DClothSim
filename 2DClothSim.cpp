@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     do {
         SDL_SetRenderDrawColor(ClothSim::renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(ClothSim::renderer);
-        ClothSim::update(cloth, 0.0002f);
+        ClothSim::update(cloth, 0.02f);
         SDL_SetRenderDrawColor(ClothSim::renderer, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderDrawPointsF(ClothSim::renderer, cloth->getVerts()->data(), cloth->getPixelsX() * cloth->getPixelsY());
         SDL_RenderPresent(ClothSim::renderer);
@@ -45,8 +45,8 @@ void ClothSim::Cloth::initVerts() {
             verts->push_back(SDL_FPoint());
             velos->push_back(vect2D(.0f, .0f));
             accs->push_back(vect2D(.0f, 9.8f));
-            (*verts)[(i * pixels_x) + j].x = (float)(10 + 2 * j);
-            (*verts)[(i * pixels_x) + j].y = (float)(10 + 2 * i);
+            (*verts)[(i * pixels_x) + j].x = (float)(100 + 2 * j);
+            (*verts)[(i * pixels_x) + j].y = (float)(50 + 2 * i);
         }
     }
 
@@ -60,6 +60,10 @@ void ClothSim::update(Cloth* cloth, const float time) {
 }
 
 void ClothSim::Cloth::updateAcc(const float time) {
+    for (int64_t i = 0; i < pixels_y; i++) {
+        for (int64_t j = 0; j < pixels_x; j++)
+            (*accs)[(pixels_x * i) + j] = vect2D(.0f, 9.8f);
+    }
     calcStruct(time);
     calcShear(time);
     calcBend(time);
@@ -89,7 +93,6 @@ void ClothSim::Cloth::calcStruct(const float time) {
                 struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
                 acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
-                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j + 1, i, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
             if (isValidVert(j - 1, i)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j - 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j - 1].y);
@@ -97,7 +100,6 @@ void ClothSim::Cloth::calcStruct(const float time) {
                 struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
                 acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
-                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j - 1, i, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
             if (isValidVert(j, i + 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 1)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 1)) + j].y);
@@ -105,7 +107,6 @@ void ClothSim::Cloth::calcStruct(const float time) {
                 struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
                 acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
-                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j, i + 1, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
             if (isValidVert(j, i - 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 1)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 1)) + j].y);
@@ -113,7 +114,6 @@ void ClothSim::Cloth::calcStruct(const float time) {
                 struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
                 acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
-                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j, i - 1, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
         }
     }
