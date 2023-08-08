@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     do {
         SDL_SetRenderDrawColor(ClothSim::renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(ClothSim::renderer);
-        ClothSim::update(cloth, 0.002f);
+        ClothSim::update(cloth, 0.02f);
         SDL_SetRenderDrawColor(ClothSim::renderer, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderDrawPointsF(ClothSim::renderer, cloth->getVerts()->data(), cloth->getPixelsX() * cloth->getPixelsY());
         SDL_RenderPresent(ClothSim::renderer);
@@ -70,7 +70,7 @@ void ClothSim::Cloth::updateAcc(const float time) {
 
 void ClothSim::Cloth::updateVelo(const float time) {
     for (int i = 0; i < pixels_x * pixels_y; i++) 
-        (*velos)[i] += (*accs)[i] * time;
+        (*velos)[i] += ((*accs)[i] * time);
 }
 
 void ClothSim::Cloth::updatePos(const float time) {
@@ -85,23 +85,35 @@ void ClothSim::Cloth::calcStruct(const float time) {
         for (int64_t j = 0; j < pixels_x; j++) {
             if (isValidVert(j + 1, i)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j + 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j + 1].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * i) + j + 1].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * i) + j + 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
+                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j + 1, i, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
             if (isValidVert(j - 1, i)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j - 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j - 1].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * i) + j - 1].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * i) + j - 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
+                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j - 1, i, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
             if (isValidVert(j, i + 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 1)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 1)) + j].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i + 1)) + j].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i + 1)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
+                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j, i + 1, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
             if (isValidVert(j, i - 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 1)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 1)) + j].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i - 1)) + j].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i - 1)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 2.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 2.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
+                //printf("Vertex %d %d\nTarget %d %d\ndelPos %f %f\nMag %f\nAcc %f %f\n", j, i, j, i - 1, delPos.x, delPos.y, mag(delPos.x, delPos.y), acc.x, acc.y);
             }
         }
     }
@@ -112,22 +124,30 @@ void ClothSim::Cloth::calcShear(const float time) {
         for (int64_t j = 0; j < pixels_x; j++) {
             if (isValidVert(j + 1, i + 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 1)) + j + 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 1)) + j + 1].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i + 1)) + j + 1].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i + 1)) + j + 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / sqrt(8.0f)) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / sqrt(8.0f)))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
             if (isValidVert(j - 1, i + 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 1)) + j - 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 1)) + j - 1].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i + 1)) + j - 1].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i + 1)) + j - 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / sqrt(8.0f)) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / sqrt(8.0f)))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
             if (isValidVert(j + 1, i - 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 1)) + j + 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 1)) + j + 1].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i - 1)) + j + 1].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i - 1)) + j + 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / sqrt(8.0f)) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / sqrt(8.0f)))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
             if (isValidVert(j - 1, i - 1)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 1)) + j - 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 1)) + j - 1].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i - 1)) + j - 1].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i - 1)) + j - 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / sqrt(8.0f)) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / sqrt(8.0f)))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
         }
@@ -139,22 +159,30 @@ void ClothSim::Cloth::calcBend(const float time) {
         for (int64_t j = 0; j < pixels_x; j++) {
             if (isValidVert(j + 2, i)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j + 2].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j + 2].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * i) + j + 2].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * i) + j + 2].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 4.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 4.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
             if (isValidVert(j - 2, i)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j - 2].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j - 2].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * i) + j - 2].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * i) + j - 2].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 4.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 4.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
             if (isValidVert(j, i + 2)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 2)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 2)) + j].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i + 2)) + j].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i + 2)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 4.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 4.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
             if (isValidVert(j, i - 2)) {
                 struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 2)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 2)) + j].y);
-                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                struct vect2D delVel = vect2D((*velos)[(pixels_x * i) + j].x - (*velos)[(pixels_x * (i - 2)) + j].x, (*velos)[(pixels_x * i) + j].y - (*velos)[(pixels_x * (i - 2)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * ((mag(delPos.x, delPos.y) / 4.0f) - 1.0f));
+                acc += ((normalize(delPos) * dotProd(normalize(delPos), (delVel / 4.0f))) * (-dampConst));
                 (*accs)[(i * pixels_x) + j] += acc;
             }
         }

@@ -61,7 +61,7 @@ namespace ClothSim {
 
 	public:
 		// Constructor
-		Cloth(int x = 100, int y = 100) : pixels_x(x), pixels_y(y), init(false), verts(nullptr), velos(nullptr), springConst(1.0f), dampConst(0.2f), vertMass(1.0f) { initVerts(); }
+		Cloth(int x = 100, int y = 100) : pixels_x(x), pixels_y(y), init(false), verts(nullptr), velos(nullptr), springConst(.025f), dampConst(0.005f), vertMass(1.0f) { initVerts(); }
 
 		void updateAcc(const float time);
 		void updateVelo(const float time);
@@ -74,6 +74,7 @@ namespace ClothSim {
 		inline bool isValidVert(int64_t x, int64_t y) { return ((-1 < x) && (x < pixels_x) && (-1 < y) && (y < pixels_y)); }
 		inline float mag(float x, float y) { return sqrt(pow(x, 2) + pow(y, 2)); }
 		inline struct vect2D normalize(const struct vect2D& vec) { return (vec / mag(vec.x, vec.y)); }
+		inline float dotProd(struct vect2D& v1, struct vect2D& v2) { return ((v1.x * v2.x) + (v1.y + v2.y)); }
 
 		// Getters
 		int64_t getPixelsX() { return pixels_x; }
