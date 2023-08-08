@@ -61,7 +61,7 @@ namespace ClothSim {
 
 	public:
 		// Constructor
-		Cloth(int x = 100, int y = 100) : pixels_x(x), pixels_y(y), init(false), verts(nullptr), velos(nullptr), springConst(.025f), dampConst(0.005f), vertMass(1.0f) { initVerts(); }
+		Cloth(int x = 10, int y = 10) : pixels_x(x), pixels_y(y), init(false), verts(nullptr), velos(nullptr), springConst(.02f), dampConst(0.0001f), vertMass(1.0f) { initVerts(); }
 
 		void updateAcc(const float time);
 		void updateVelo(const float time);

@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     do {
         SDL_SetRenderDrawColor(ClothSim::renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(ClothSim::renderer);
-        ClothSim::update(cloth, 0.02f);
+        ClothSim::update(cloth, 0.0002f);
         SDL_SetRenderDrawColor(ClothSim::renderer, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderDrawPointsF(ClothSim::renderer, cloth->getVerts()->data(), cloth->getPixelsX() * cloth->getPixelsY());
         SDL_RenderPresent(ClothSim::renderer);
