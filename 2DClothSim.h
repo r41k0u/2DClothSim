@@ -19,6 +19,31 @@ namespace ClothSim {
 		float y;
 
 		vect2D(float inp_x, float inp_y) { x = inp_x; y = inp_y; }
+
+		vect2D operator*(float scalar) const { return vect2D(x * scalar, y * scalar); }
+		vect2D operator/(float scalar) const { return vect2D(x / scalar, y / scalar); }
+		struct vect2D& operator*=(float scalar) {
+			x *= scalar;
+			y *= scalar;
+			return *this;
+		}
+		struct vect2D& operator/=(float scalar) {
+			if (scalar != 0.0f) {
+				x /= scalar;
+				y /= scalar;
+			}
+			return *this;
+		}
+		struct vect2D& operator+=(const vect2D& v2) {
+			x += v2.x;
+			y += v2.y;
+			return *this;
+		}
+		struct vect2D& operator-=(const vect2D& v2) {
+			x -= v2.x;
+			y -= v2.y;
+			return *this;
+		}
 	};
 
 	class Cloth {
@@ -47,7 +72,8 @@ namespace ClothSim {
 		void calcBend(const float time);
 
 		inline bool isValidVert(int64_t x, int64_t y) { return ((-1 < x) && (x < pixels_x) && (-1 < y) && (y < pixels_y)); }
-		inline float norm(float x, float y) { return sqrt(pow(x, 2) + pow(y, 2)); }
+		inline float mag(float x, float y) { return sqrt(pow(x, 2) + pow(y, 2)); }
+		inline struct vect2D normalize(const struct vect2D& vec) { return (vec / mag(vec.x, vec.y)); }
 
 		// Getters
 		int64_t getPixelsX() { return pixels_x; }

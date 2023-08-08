@@ -54,13 +54,14 @@ void ClothSim::Cloth::initVerts() {
 }
 
 void ClothSim::update(Cloth* cloth, const float time) {
+    cloth->updateAcc(time);
     cloth->updateVelo(time);
     cloth->updatePos(time);
 }
 
 void ClothSim::Cloth::updateAcc(const float time) {
     calcStruct(time);
-    calcBend(time);
+    calcShear(time);
     calcBend(time);
 
     // Fixed the 2 corners of cloth
@@ -68,10 +69,8 @@ void ClothSim::Cloth::updateAcc(const float time) {
 }
 
 void ClothSim::Cloth::updateVelo(const float time) {
-    for (int i = 0; i < pixels_x * pixels_y; i++) {
-        (*velos)[i].x += (*accs)[i].x * time;
-        (*velos)[i].y += (*accs)[i].y * time;
-    }
+    for (int i = 0; i < pixels_x * pixels_y; i++) 
+        (*velos)[i] += (*accs)[i] * time;
 }
 
 void ClothSim::Cloth::updatePos(const float time) {
@@ -85,17 +84,79 @@ void ClothSim::Cloth::calcStruct(const float time) {
     for (int64_t i = 0; i < pixels_y; i++) {
         for (int64_t j = 0; j < pixels_x; j++) {
             if (isValidVert(j + 1, i)) {
-                float delL = norm((*verts)[pixels_x * i + j].x - (*verts)[pixels_x * i + j + 1].x, (*verts)[pixels_x * i + j].y - (*verts)[pixels_x * i + j + 1].y) - 1.0f;
-
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j + 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j + 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j - 1, i)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j - 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j - 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j, i + 1)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 1)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 1)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j, i - 1)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 1)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 1)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 2.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
             }
         }
     }
 }
 
 void ClothSim::Cloth::calcShear(const float time) {
-
+    for (int64_t i = 0; i < pixels_y; i++) {
+        for (int64_t j = 0; j < pixels_x; j++) {
+            if (isValidVert(j + 1, i + 1)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 1)) + j + 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 1)) + j + 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j - 1, i + 1)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 1)) + j - 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 1)) + j - 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j + 1, i - 1)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 1)) + j + 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 1)) + j + 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j - 1, i - 1)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 1)) + j - 1].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 1)) + j - 1].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - sqrt(8.0f)));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+        }
+    }
 }
 
 void ClothSim::Cloth::calcBend(const float time) {
-
+    for (int64_t i = 0; i < pixels_y; i++) {
+        for (int64_t j = 0; j < pixels_x; j++) {
+            if (isValidVert(j + 2, i)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j + 2].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j + 2].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j - 2, i)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * i) + j - 2].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * i) + j - 2].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j, i + 2)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i + 2)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i + 2)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+            if (isValidVert(j, i - 2)) {
+                struct vect2D delPos = vect2D((*verts)[(pixels_x * i) + j].x - (*verts)[(pixels_x * (i - 2)) + j].x, (*verts)[(pixels_x * i) + j].y - (*verts)[(pixels_x * (i - 2)) + j].y);
+                struct vect2D acc = normalize(delPos) * (-springConst * (mag(delPos.x, delPos.y) - 4.0f));
+                (*accs)[(i * pixels_x) + j] += acc;
+            }
+        }
+    }
 }
